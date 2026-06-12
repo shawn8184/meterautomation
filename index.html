@@ -1,0 +1,92 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Meter Reading Department — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0b1c2b;--panel:#102a3e;--panel2:#15344a;--line:#1f425c;--txt:#e3eef5;--mut:#7e9bad;
+--blue:#4b9fe0;--green:#34c08a;--amber:#e7a23e;--red:#e2685c;--purple:#9b7bd0}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);
+font:14px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:30px}
+.wrap{max-width:1200px;margin:0 auto} h1{font-size:25px;margin:0 0 3px}
+.sub{color:var(--mut);margin:0} .sec{font-size:12px;color:var(--amber);text-transform:uppercase;
+letter-spacing:1.4px;margin:30px 0 12px;font-weight:600}
+.banner{display:inline-block;margin:13px 0 6px;padding:8px 13px;border:1px solid var(--line);
+border-radius:8px;background:var(--panel);color:var(--mut);font-size:12.5px} .banner b{color:var(--amber)}
+.grid{display:grid;gap:14px} .kpis{grid-template-columns:repeat(4,1fr)}
+@media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px} .kpi .l{color:var(--mut);font-size:11.5px;margin-top:3px;line-height:1.35}
+.kpi .t{font-size:10.5px;margin-top:7px;display:inline-block;padding:2px 7px;border-radius:20px}
+.t.g{background:rgba(52,192,138,.16);color:var(--green)} .t.a{background:rgba(231,162,62,.16);color:var(--amber)}
+.t.b{background:rgba(75,159,224,.16);color:var(--blue)} .t.r{background:rgba(226,104,92,.16);color:var(--red)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:920px){.row{grid-template-columns:1fr}}
+.card h2{font-size:12px;margin:0 0 13px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px}
+table{width:100%;border-collapse:collapse;font-size:13px} th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.big{font-size:21px;font-weight:700} .lead{color:var(--txt)} b.amb{color:var(--amber)}
+.foot{color:var(--mut);font-size:12px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+.split{display:grid;grid-template-columns:1.25fr 1fr;gap:14px} @media(max-width:920px){.split{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>Meter Reading Department — Dashboard</h1>
+<p class="sub">Daily work queue · fleet coverage · exceptions · chase list</p>
+<div class="banner">📸 <b>Snapshot — June 8, 2026.</b> Fleet from latest eAutomate export (11,703 devices); incoming reads from EDGE Extracteds (Dataverse). Static — ask Claude to refresh anytime.</div>
+
+<div class="sec">Daily operations</div>
+<div class="row">
+  <div class="card"><h2>Current import — ready to load</h2>
+    <div class="big" style="color:var(--green)">19 devices · 37 readings</div>
+    <p class="sub" style="margin:8px 0 0;font-size:13px">19 B/W + 18 Color · Canon &amp; Xerox · all advancing.<br>
+    File: <b style="color:var(--txt)">AIMeters Import - READY 2026-06-11.xls</b> (Advanced tab). Test one device, then commit.</p>
+    <div style="margin-top:12px"><span class="t g">strict &gt; current</span> <span class="t a">Canon/Xerox only</span> <span class="t b">source = AIMeters</span></div>
+  </div>
+  <div class="card"><h2>Incoming reads &amp; exceptions — 53 new (latest cycle)</h2>
+    <canvas id="inc" height="150"></canvas></div>
+</div>
+
+<div class="sec">Review queue — needs a human</div>
+<div class="split">
+  <div class="card"><h2>Stuck readings to clear</h2>
+    <canvas id="rev" height="150"></canvas>
+    <p class="sub" style="margin:10px 0 0;font-size:12px"><b class="amb">30</b> devices flagged for review +
+    <b class="amb">18</b> backwards-meter exceptions. See <b style="color:var(--txt)">Meter Review Queue 2026-06-11.xlsx</b>.</p></div>
+  <div class="card"><h2>What's in the queue</h2>
+    <table>
+      <thead><tr><th>Type</th><th style="text-align:right">Count</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Unreadable (0/0)</td><td style="text-align:right">28</td><td>Open the email — no clean number captured</td></tr>
+        <tr><td>No / unknown serial</td><td style="text-align:right">2</td><td>Identify the device, then enter</td></tr>
+        <tr><td>Meter went backwards</td><td style="text-align:right">18</td><td>Correct in eAutomate (reverse invoice if billed)</td></tr>
+      </tbody>
+    </table>
+    <p class="sub" style="margin:10px 0 0;font-size:12px">361 raw flags collapse to the same <b class="amb">30</b> devices — recurring failures worth a one-time fix.</p></div>
+</div>
+
+<div class="sec">Chase list — stale &amp; never-reporting</div>
+<div class="split">
+  <div class="card"><h2>Reading recency (full fleet)</h2><canvas id="rec" height="150"></canvas>
+    <p class="sub" style="margin:10px 0 0;font-size:12px"><b class="amb">2,661</b> devices not read in 90+ days · <b class="amb">661</b> never read.</p></div>
+  <div class="card"><h2>Top customers to chase (stale + never)</h2>
+    <table><thead><tr><th>Customer</th><th style="text-align:right">Gap</th><th style="text-align:right">Fleet</th></tr></thead>
+    <tbody><tr><td>EDGE Business Systems</td><td style='text-align:right'>239</td><td style='text-align:right;color:var(--mut)'>250</td></tr><tr><td>Real Floors Inc</td><td style='text-align:right'>70</td><td style='text-align:right;color:var(--mut)'>186</td></tr><tr><td>OS National, LLC</td><td style='text-align:right'>54</td><td style='text-align:right;color:var(--mut)'>68</td></tr><tr><td>Presbyterian Homes of Georgia, Inc</td><td style='text-align:right'>50</td><td style='text-align:right;color:var(--mut)'>142</td></tr><tr><td>Digestive Healthcare of Georgia PC</td><td style='text-align:right'>46</td><td style='text-align:right;color:var(--mut)'>46</td></tr><tr><td>Crescent Mortgage Company</td><td style='text-align:right'>36</td><td style='text-align:right;color:var(--mut)'>36</td></tr><tr><td>Stivers Decatur Subaru</td><td style='text-align:right'>36</td><td style='text-align:right;color:var(--mut)'>36</td></tr><tr><td>Lawler Foods dba Atlanta Cheesecake</td><td style='text-align:right'>35</td><td style='text-align:right;color:var(--mut)'>35</td></tr><tr><td>American Honda Motor Co</td><td style='text-align:right'>33</td><td style='text-align:right;color:var(--mut)'>59</td></tr><tr><td>Southern States LLC</td><td style='text-align:right'>32</td><td style='text-align:right;color:var(--mut)'>100</td></tr><tr><td>St. John Neumann Regional Catholic School</td><td style='text-align:right'>30</td><td style='text-align:right;color:var(--mut)'>36</td></tr><tr><td>Robertson Optical Lab, Inc.</td><td style='text-align:right'>28</td><td style='text-align:right;color:var(--mut)'>59</td></tr></tbody></table></div>
+</div>
+
+<div class="sec">Fleet coverage &amp; mix</div>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n">11,703</div><div class="l">Active devices</div><div class="t b">fleet</div></div>
+  <div class="card kpi"><div class="n">92.5%</div><div class="l">Have a current B/W meter (10,830)</div><div class="t g">coverage</div></div>
+  <div class="card kpi"><div class="n">5,255</div><div class="l">Auto-collected (DCA-likely, ≤7d)</div><div class="t b">automated</div></div>
+  <div class="card kpi"><div class="n">6,437</div><div class="l">Color-capable (5,266 mono)</div><div class="t b">mix</div></div>
+</div>
+<div class="row" style="margin-top:14px">
+  <div class="card"><h2>Meter mix</h2><canvas id="mix" height="150"></canvas></div>
+  <div class="card"><h2>Collection method (inferred)</h2><canvas id="col" height="150"></canvas>
+    <p class="sub" style="margin:10px 0 0;font-size:12px">DCA-likely = read within 7 days; manual/stale = the rest. Confirm against eAutomate Meter Source.</p></div>
+</div>
+
+<div class="foot">Environment 274df86d-799c-e359-a881-505c4e6f4a0e · orgf6c18a6a.crm.dynamics.com · eAutomate v25.
+Guard rule: import a reading only if it strictly exceeds eAutomate's current meter; Canon &amp; Xerox only. DCA status inferred from reading recency (authoritative = Meter Source).</div>
+</div>
+<script>
+const mut='#7e9bad',line='#1f425c',grid={color:line},tick={color:mut},txt='#e3eef5';
+new Chart(inc,{type:'doughnut',data:{labels:['Imported (19)','Matched/below current (22)','Wrong brand (4)','Zero/blank (3)','Not in eAutomate (5)'],
+ datasets:[{data:[19,22,4,3,5],
